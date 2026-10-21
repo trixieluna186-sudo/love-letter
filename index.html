@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Letter For You 💖</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library for victory celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Fredoka:wght@400;500;600&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #ffe6ea 0%, #ffc3a0 50%, #ffa8a8 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .font-handwriting {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .font-cute {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Floating background elements */
+        .bg-heart {
+            position: absolute;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* Envelope animation styles */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background-color: #ff8fa3;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: 0 15px 35px rgba(255, 105, 135, 0.3);
+            cursor: pointer;
+            transition: transform 0.4s ease;
+        }
+
+        @media (min-width: 640px) {
+            .envelope {
+                width: 420px;
+                height: 280px;
+            }
+        }
+
+        .envelope:hover {
+            transform: scale(1.02) translateY(-5px);
+        }
+
+        /* Top Flap */
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 130px solid #ff758f;
+            transform-origin: top;
+            transition: transform 0.6s ease 0.2s, z-index 0.2s ease;
+            z-index: 5;
+        }
+
+        @media (min-width: 640px) {
+            .flap {
+                border-left-width: 210px;
+                border-right-width: 210px;
+                border-top-width: 165px;
+            }
+        }
+
+        /* Pocket sides & bottom */
+        .pocket {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid #ffa6c1;
+            border-right: 160px solid #ffa6c1;
+            border-bottom: 120px solid #ff80a0;
+            border-top: 100px solid transparent;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            z-index: 4;
+        }
+
+        @media (min-width: 640px) {
+            .pocket {
+                border-left-width: 210px;
+                border-right-width: 210px;
+                border-bottom-width: 155px;
+                border-top-width: 125px;
+            }
+        }
+
+        /* Wax Seal */
+        .wax-seal {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ff4d6d 0%, #c9184a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 6;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        @media (min-width: 640px) {
+            .wax-seal {
+                top: 130px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* Envelope Open States */
+        .envelope.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope.open .wax-seal {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+        }
+
+        /* Heart Pulse Animation */
+        @keyframes pulse-fast {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .pulse {
+            animation: pulse-fast 1.2s infinite ease-in-out;
+        }
+
+        /* Dodging No Button CSS transitions */
+        #no-btn {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform, left, top;
+        }
+
+        /* Soft Glow Effects */
+        .glow-effect {
+            box-shadow: 0 0 25px rgba(255, 105, 180, 0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 relative select-none">
+
+    <!-- Background Floating Hearts -->
+    <div id="hearts-bg" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+    <!-- Music/Audio Controls -->
+    <button id="music-btn" class="fixed top-4 right-4 bg-white/80 hover:bg-white text-pink-500 p-3 rounded-full shadow-lg backdrop-blur-md transition-all duration-300 z-50 flex items-center justify-center w-12 h-12">
+        <i id="music-icon" class="fas fa-music text-lg"></i>
+    </button>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-lg flex flex-col items-center justify-center relative z-10">
+
+        <!-- STEP 1: Interactive Envelope Opening -->
+        <div id="envelope-container" class="flex flex-col items-center">
+            <p class="text-pink-700 font-cute text-xl sm:text-2xl mb-6 text-center animate-bounce font-semibold">
+                💌 You have a secret love letter! <br><span class="text-sm font-normal opacity-80">(Tap envelope to open)</span>
+            </p>
+
+            <div class="envelope-wrapper">
+                <div id="envelope" class="envelope flex justify-center items-center">
+                    <div class="flap"></div>
+                    <div class="wax-seal">
+                        <i class="fas fa-heart text-xl sm:text-2xl"></i>
+                    </div>
+                    <div class="pocket"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: The Cute Letter Card (Hidden by default) -->
+        <div id="letter-card" class="hidden w-full bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-pink-200 transform transition-all duration-500 scale-90 opacity-0 my-auto">
+            
+            <!-- Cute Header Mascot / Gif -->
+            <div class="text-center mb-4 relative">
+                <div id="mascot-container" class="w-28 h-28 sm:w-36 sm:h-36 mx-auto relative flex items-center justify-center">
+                    <span id="cute-emoji" class="text-7xl sm:text-8xl transition-all duration-300 pulse">🥺</span>
+                </div>
+                <!-- Dynamic Response Banner -->
+                <p id="prompt-banner" class="text-pink-500 font-cute text-sm sm:text-base h-6 font-medium mt-2 transition-all">
+                    I have something super important to ask you...
+                </p>
+            </div>
+
+            <!-- Letter Body -->
+            <div class="text-center space-y-3 mb-6">
+                <h1 id="main-title" class="text-3xl sm:text-4xl font-handwriting font-bold text-pink-600">
+                    My Dearest Love,
+                </h1>
+                <p id="letter-text" class="text-gray-700 font-cute text-base sm:text-lg leading-relaxed px-2">
+                    Every second with you feels like a sweet dream come true. You make my heart flutter every single day! 💕
+                </p>
+                <div class="pt-2">
+                    <p id="question-text" class="text-xl sm:text-2xl font-bold text-pink-600 font-cute">
+                        Do you still love me? 💖
+                    </p>
+                </div>
+            </div>
+
+            <!-- Interactive Buttons Container -->
+            <div id="btn-container" class="relative min-h-[140px] flex items-center justify-center gap-4 flex-wrap">
+                <!-- YES BUTTON -->
+                <button id="yes-btn" class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-cute font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-200 hover:scale-110 active:scale-95 flex items-center gap-2 text-lg glow-effect z-20">
+                    <i class="fas fa-heart"></i> YES!
+                </button>
+
+                <!-- NO BUTTON (Dodging Logic Attached) -->
+                <button id="no-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-cute font-medium py-3 px-6 rounded-full shadow transition-all duration-100 flex items-center gap-2 text-base z-10">
+                    <i class="fas fa-times-circle"></i> No
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Celebration Screen (Hidden by default) -->
+        <div id="celebration-card" class="hidden w-full bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-pink-300 text-center transform transition-all duration-500 scale-90 opacity-0">
+            <div class="text-7xl mb-4 animate-bounce">🎉</div>
+            <h2 class="text-4xl font-handwriting font-bold text-pink-600 mb-2">I Knew It! 💖</h2>
+            <p class="text-xl font-cute text-pink-500 font-semibold mb-4">You Love Me So Much! 🥰</p>
+            
+            <div class="bg-pink-50 rounded-2xl p-4 border-2 border-pink-100 mb-6 space-y-2">
+                <p class="text-gray-700 font-cute text-base">
+                    Yay! You made my whole heart burst with happiness! I love you endlessly, forever and always! 🌸✨
+                </p>
+                <p class="text-pink-600 font-handwriting text-2xl pt-2">
+                    ~ Yours Forever ~
+                </p>
+            </div>
+
+            <button id="replay-btn" class="bg-pink-500 hover:bg-pink-600 text-white font-cute font-semibold py-2 px-6 rounded-full shadow-md transition-all transform hover:scale-105 active:scale-95">
+                <i class="fas fa-redo-alt mr-2"></i> Read Again
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Audio Element using Web Audio API synth backup for reliability -->
+    <script>
+        /* Modern Web Audio Synth for cute sound effects without external MP3 dependencies */
+        class CuteAudio {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playPop() {
+                if (this.isMuted) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playDodged() {
+                if (this.isMuted) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(150, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            playCelebration() {
+                if (this.isMuted) return;
+                this.init();
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // C E G C E G
+                notes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.4);
+                    }, index * 90);
+                });
+            }
+        }
+
+        const synthAudio = new CuteAudio();
+
+        // Elements
+        const envelopeContainer = document.getElementById('envelope-container');
+        const envelope = document.getElementById('envelope');
+        const letterCard = document.getElementById('letter-card');
+        const celebrationCard = document.getElementById('celebration-card');
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const btnContainer = document.getElementById('btn-container');
+        const cuteEmoji = document.getElementById('cute-emoji');
+        const promptBanner = document.getElementById('prompt-banner');
+        const musicBtn = document.getElementById('music-btn');
+        const musicIcon = document.getElementById('music-icon');
+        const replayBtn = document.getElementById('replay-btn');
+
+        // Playful Prompts & Emojis array when No is hovered/clicked
+        const noResponses = [
+            { prompt: "Are you sure? Think again! 🥺", emoji: "😿", yesScale: 1.15 },
+            { prompt: "Nice try! You can't click no! 😜", emoji: "🙈", yesScale: 1.3 },
+            { prompt: "Pretty please? 💖", emoji: "🥺", yesScale: 1.45 },
+            { prompt: "My heart is breaking! 💔", emoji: "😭", yesScale: 1.6 },
+            { prompt: "You're doing this on purpose! 😂", emoji: "😜", yesScale: 1.75 },
+            { prompt: "Just click YES already! 🥰", emoji: "👉💖", yesScale: 1.9 },
+            { prompt: "Look how big the YES button is now! ✨", emoji: "😍", yesScale: 2.1 }
+        ];
+
+        let dodgeCount = 0;
+        let isNoPositionedAbsolute = false;
+
+        // Background Hearts Generator
+        function createBackgroundHearts() {
+            const container = document.getElementById('hearts-bg');
+            const heartIcons = ['💖', '💕', '🌸', '✨', '💗', '💌'];
+            
+            for (let i = 0; i < 25; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'bg-heart';
+                heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.top = `${Math.random() * 100}%`;
+                heart.style.fontSize = `${Math.random() * 20 + 14}px`;
+                heart.style.animationDelay = `${Math.random() * 5}s`;
+                heart.style.animationDuration = `${Math.random() * 4 + 4}s`;
+                container.appendChild(heart);
+            }
+        }
+
+        // Open Envelope Handler
+        envelope.addEventListener('click', () => {
+            synthAudio.playPop();
+            envelope.classList.add('open');
+            
+            setTimeout(() => {
+                envelopeContainer.classList.add('transition-all', 'duration-500', 'opacity-0', 'scale-75');
+                setTimeout(() => {
+                    envelopeContainer.style.display = 'none';
+                    letterCard.classList.remove('hidden');
+                    // Trigger fade in animation
+                    setTimeout(() => {
+                        letterCard.classList.remove('opacity-0', 'scale-90');
+                        letterCard.classList.add('opacity-100', 'scale-100');
+                    }, 50);
+                }, 400);
+            }, 700);
+        });
+
+        // Teleport / Move No Button Logic
+        function dodgeNoButton() {
+            synthAudio.playDodged();
+
+            // Set absolute position on container after first dodge to enable free movement
+            if (!isNoPositionedAbsolute) {
+                const rect = noBtn.getBoundingClientRect();
+                const containerRect = btnContainer.getBoundingClientRect();
+                
+                noBtn.style.position = 'absolute';
+                noBtn.style.left = `${rect.left - containerRect.left}px`;
+                noBtn.style.top = `${rect.top - containerRect.top}px`;
+                isNoPositionedAbsolute = true;
+            }
+
+            // Get viewport boundaries (keep button inside visible card or container)
+            const containerWidth = btnContainer.clientWidth;
+            const containerHeight = btnContainer.clientHeight;
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            // Calculate new safe random coordinate within button container
+            const padding = 15;
+            const maxX = containerWidth - btnWidth - padding;
+            const maxY = containerHeight - btnHeight - padding;
+
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            // Apply smooth position update
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+
+            // Update prompt messages and grow YES button
+            const response = noResponses[Math.min(dodgeCount, noResponses.length - 1)];
+            promptBanner.innerText = response.prompt;
+            cuteEmoji.innerText = response.emoji;
+            
+            // Grow Yes button dynamically
+            yesBtn.style.transform = `scale(${response.yesScale})`;
+
+            dodgeCount++;
+        }
+
+        // Mouseover & Touchstart triggers for No Button
+        noBtn.addEventListener('mouseenter', dodgeNoButton);
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            dodgeNoButton();
+        });
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            dodgeNoButton();
+        });
+
+        // YES Button Celebration Handler
+        yesBtn.addEventListener('click', () => {
+            synthAudio.playCelebration();
+
+            // Trigger Fireworks / Confetti
+            confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff4d6d', '#ff85a1', '#fbb1bd', '#ffffff']
+            });
+
+            // Extra floating hearts blast
+            const heartInterval = setInterval(() => {
+                confetti({
+                    particleCount: 15,
+                    angle: Math.random() * 360,
+                    spread: 55,
+                    origin: { x: Math.random(), y: Math.random() - 0.2 },
+                    shapes: ['square'],
+                    colors: ['#ff4d6d', '#ff758f']
+                });
+            }, 250);
+
+            setTimeout(() => clearInterval(heartInterval), 3000);
+
+            // Hide Letter Card, Show Celebration Card
+            letterCard.classList.add('opacity-0', 'scale-90');
+            setTimeout(() => {
+                letterCard.classList.add('hidden');
+                celebrationCard.classList.remove('hidden');
+                setTimeout(() => {
+                    celebrationCard.classList.remove('opacity-0', 'scale-90');
+                    celebrationCard.classList.add('opacity-100', 'scale-100');
+                }, 50);
+            }, 400);
+        });
+
+        // Replay Button Reset logic
+        replayBtn.addEventListener('click', () => {
+            synthAudio.playPop();
+            dodgeCount = 0;
+            isNoPositionedAbsolute = false;
+            
+            // Reset styles
+            yesBtn.style.transform = 'scale(1)';
+            noBtn.style.position = 'relative';
+            noBtn.style.left = 'auto';
+            noBtn.style.top = 'auto';
+            promptBanner.innerText = "I have something super important to ask you...";
+            cuteEmoji.innerText = "🥺";
+
+            celebrationCard.classList.add('opacity-0', 'scale-90');
+            setTimeout(() => {
+                celebrationCard.classList.add('hidden');
+                letterCard.classList.remove('hidden');
+                setTimeout(() => {
+                    letterCard.classList.remove('opacity-0', 'scale-90');
+                    letterCard.classList.add('opacity-100', 'scale-100');
+                }, 50);
+            }, 400);
+        });
+
+        // Music Toggle Control
+        musicBtn.addEventListener('click', () => {
+            synthAudio.isMuted = !synthAudio.isMuted;
+            if (synthAudio.isMuted) {
+                musicIcon.className = "fas fa-volume-mute text-lg text-gray-400";
+            } else {
+                musicIcon.className = "fas fa-music text-lg text-pink-500";
+                synthAudio.playPop();
+            }
+        });
+
+        // Initialize background hearts on load
+        window.addEventListener('load', () => {
+            createBackgroundHearts();
+        });
+    </script>
+</body>
+</html>
